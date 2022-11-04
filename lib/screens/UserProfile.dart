@@ -186,42 +186,62 @@ class _UserProfileState extends State<UserProfile> {
   }
 
   void fetchProfile() async {
-    Database database = CbLiteManager.getSharedInstance().userprofileDatabase!;
-    // tag::docfetch[]
-    String docId = CbLiteManager.getSharedInstance().getCurrentUserDocId();
 
-    if (database != null) {
-      Map<String, Object> profile = {}; // <1>
-      Document? document = await database.document(docId); // <3>
-      profile["email"] = CbLiteManager.getSharedInstance().currentUser!; // <2>
+      Database database = CbLiteManager.getSharedInstance().userprofileDatabase!;
+      String docId = CbLiteManager.getSharedInstance().getCurrentUserDocId();
 
-      if (document != null) {
-        setState(() {
-          name = document.string("name"); // <4>
-          address = document.string("address"); // <4>
-          String? imageString = document.string("imageData");
-          if (imageString != null) {
-            if (!currentImage.existsSync()) {
-              currentImage.createSync();
-            }
-            currentImage.writeAsBytesSync(base64.decode(imageString));
+      Query query = QueryBuilder()
+          .select(SelectResult.all())
+          .from(DataSource.database(database))
+          .where(Meta.id.equalTo(Expression.string(docId)));
+
+      query.addChangeListener((change) { // <1>
+        ResultSet rows = change.results;
+        rows.asStream().forEach((element) {
+          Dictionary dictionary = element.dictionary("userprofile")!; // <3>
+          if (dictionary != null) {
+            setState(() {
+              name = dictionary.string("name"); // <4>
+              address = dictionary.string("address"); // <4>
+              String? imageString = dictionary.string("imageData");
+              if (imageString != null) {
+                if (!currentImage.existsSync()) {
+                  currentImage.createSync();
+                }
+                currentImage.writeAsBytesSync(base64.decode(imageString));
+              } else {
+                if (currentImage.existsSync()) {
+                  currentImage.deleteSync();
+                }
+              }
+              email = dictionary.string("email");
+            });
           } else {
-            if (currentImage.existsSync()) {
-              currentImage.deleteSync();
-            }
+            setState(() {
+              email = CbLiteManager
+                  .getSharedInstance()
+                  .currentUser!;
+              if (currentImage.existsSync()) {
+                currentImage.deleteSync();
+              }
+            });
           }
-          email = document.string("email");
-        });
-      } else {
-        setState(() {
-          email = CbLiteManager.getSharedInstance().currentUser!;
-          if (currentImage.existsSync()) {
-            currentImage.deleteSync();
-          }
-        });
+        }
+        );
       }
+
+      );
+
+      try {
+        query.execute();
+      } on CouchbaseLiteException catch(e) {
+      print(e);
     }
   }
+
+
+
+
 
   void saveProfile(Map<String, Object> profile) {
     Database database = CbLiteManager.getSharedInstance().userprofileDatabase!;
