@@ -9,7 +9,9 @@ import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../CbLiteManager.dart';
+import '../CurrentData.dart';
 import 'Login.dart';
+import 'UniversitySelect.dart';
 
 // This class handles the Page to dispaly the user's info on the "Edit Profile" Screen
 class UserProfile extends StatefulWidget {
@@ -20,16 +22,10 @@ class UserProfile extends StatefulWidget {
 
 class _UserProfileState extends State<UserProfile> {
   var systemTemp = Directory.systemTemp;
-  Image imageDefault = Image.asset("assets/profile_placeholder.png");
-  File currentImage = File("${Directory.systemTemp.path}/tmpImage");
-
-  String? name = "";
-  String? email = "";
-  String? address = "";
 
   @override
   Widget build(BuildContext context) {
-    if (email == "") fetchProfile();
+    if (CurrentData.sharedData.email == null) fetchProfile();
     return Scaffold(
       appBar: AppBar(
         title: Text("User Profile"),
@@ -52,7 +48,7 @@ class _UserProfileState extends State<UserProfile> {
                           .pickImage(source: ImageSource.gallery);
                       if (image == null) return;
                       final imageTemp = File(image.path);
-                      setState(() => imageTemp.copySync(currentImage.path));
+                      setState(() => imageTemp.copySync(CurrentData.sharedData.currentImage.path));
                     } on PlatformException catch (e) {
                       print('Failed to pick image: $e');
                     }
@@ -70,9 +66,10 @@ class _UserProfileState extends State<UserProfile> {
             height: 20,
           ),
           Column(children: [
-            buildUserInfoDisplay(name, "Name"),
-            buildUserInfoDisplay(email, "Email"),
-            buildUserInfoDisplay(address, "Address"),
+            buildUserInfoDisplay(CurrentData.sharedData.name, "Name"),
+            buildUserInfoDisplay(CurrentData.sharedData.email, "Email"),
+            buildUserInfoDisplay(CurrentData.sharedData.address, "Address"),
+            buildUserInfoDisplayUniversity(CurrentData.sharedData.university, "University"),
             Row(mainAxisAlignment: MainAxisAlignment.center, children: [
               CircleAvatar(
                 radius: 30,
@@ -81,7 +78,7 @@ class _UserProfileState extends State<UserProfile> {
                     color: Colors.white,
                     onPressed: () {
                       CbLiteManager.getSharedInstance().closeDatabaseForUser();
-
+                      CurrentData.sharedData = CurrentData();
                       Navigator.pushNamed(context, Login.id);
                     },
                     icon: Icon(
@@ -102,11 +99,12 @@ class _UserProfileState extends State<UserProfile> {
                 child: TextButton(
                     onPressed: () {
                       Map<String, Object> profile = {};
-                      profile["name"] = name ?? "";
-                      profile["email"] = email ?? "";
-                      profile["address"] = address ?? "";
-                      if(currentImage.existsSync()) {
-                        final bytes = currentImage.readAsBytesSync();
+                      profile["name"] = CurrentData.sharedData.name ?? "";
+                      profile["email"] = CurrentData.sharedData.email ?? "";
+                      profile["address"] = CurrentData.sharedData.address ?? "";
+                      profile["university"] = CurrentData.sharedData.university ?? "";
+                      if(CurrentData.sharedData.currentImage.existsSync()) {
+                        final bytes = CurrentData.sharedData.currentImage.readAsBytesSync();
                         profile["imageData"] = base64.encode(bytes);
                       }
 
@@ -165,23 +163,58 @@ class _UserProfileState extends State<UserProfile> {
             width: 1,
           ))),
           child: TextFormField(
+            readOnly: title == "Email" ? true : false,
+
             key: Key(getValue ?? ""),
             style: TextStyle(fontSize: 16, height: 1.4),
             initialValue: getValue,
             onChanged: (value) {
-              if (title == "Name") name = value;
-              if (title == "Email") email = value;
-              if (title == "Address") address = value;
+              if (title == "Name") CurrentData.sharedData.name = value;
+              if (title == "Email") CurrentData.sharedData.email = value;
+              if (title == "Address") CurrentData.sharedData.address = value;
             },
           ),
         ),
       ]));
 
+  Widget buildUserInfoDisplayUniversity(String? getValue, String title) => Padding(
+      padding: EdgeInsets.only(bottom: 10),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(
+          title,
+          style: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w500,
+            color: Colors.grey,
+          ),
+        ),
+        SizedBox(
+          height: 1,
+        ),
+        Container(
+          width: 350,
+          height: 40,
+          decoration: BoxDecoration(
+              border: Border(
+                  bottom: BorderSide(
+                    color: Colors.grey,
+                    width: 1,
+                  ))),
+          child: TextFormField(
+            readOnly: true,
+            onTap: (){Navigator.pushNamed(context, UniversitySelect.id);},
+            key: Key(getValue ?? ""),
+            style: TextStyle(fontSize: 16, height: 1.4),
+            initialValue: getValue,
+          ),
+        ),
+      ]));
+
   Image getImage() {
-    if (currentImage.existsSync()) {
-      return Image.file(currentImage);
+    if (CurrentData.sharedData.currentImage.existsSync()) {
+      return Image.file(CurrentData.sharedData.currentImage);
     } else {
-      return imageDefault;
+      return CurrentData.sharedData.imageDefault;
     }
   }
 
@@ -195,40 +228,50 @@ class _UserProfileState extends State<UserProfile> {
           .from(DataSource.database(database))
           .where(Meta.id.equalTo(Expression.string(docId)));
 
-      query.addChangeListener((change) { // <1>
+      query.addChangeListener((change) {
         ResultSet rows = change.results;
         rows.asStream().forEach((element) {
-          Dictionary dictionary = element.dictionary("userprofile")!; // <3>
+          Dictionary dictionary = element.dictionary("userprofile")!;
           if (dictionary != null) {
             setState(() {
-              name = dictionary.string("name"); // <4>
-              address = dictionary.string("address"); // <4>
+              CurrentData.sharedData.name = dictionary.string("name");
+              CurrentData.sharedData.address = dictionary.string("address");
+              CurrentData.sharedData.university = dictionary.string("university");
               String? imageString = dictionary.string("imageData");
               if (imageString != null) {
-                if (!currentImage.existsSync()) {
-                  currentImage.createSync();
+                if (!CurrentData.sharedData.currentImage.existsSync()) {
+                  CurrentData.sharedData.currentImage.createSync();
                 }
-                currentImage.writeAsBytesSync(base64.decode(imageString));
+                CurrentData.sharedData.currentImage.writeAsBytesSync(base64.decode(imageString));
               } else {
-                if (currentImage.existsSync()) {
-                  currentImage.deleteSync();
+                if (CurrentData.sharedData.currentImage.existsSync()) {
+                  CurrentData.sharedData.currentImage.deleteSync();
                 }
               }
-              email = dictionary.string("email");
+              CurrentData.sharedData.email = dictionary.string("email");
             });
           } else {
             setState(() {
-              email = CbLiteManager
+              CurrentData.sharedData.email = CbLiteManager
                   .getSharedInstance()
                   .currentUser!;
-              if (currentImage.existsSync()) {
-                currentImage.deleteSync();
+              if (CurrentData.sharedData.currentImage.existsSync()) {
+                CurrentData.sharedData.currentImage.deleteSync();
               }
             });
           }
         }
         );
-      }
+
+      });
+
+    setState(() {
+      CurrentData.sharedData.email = CbLiteManager
+          .getSharedInstance()
+          .currentUser!;
+
+    }
+
 
       );
 

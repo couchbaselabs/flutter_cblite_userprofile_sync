@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_cblite_userprofile_sync/screens/Login.dart';
+import 'package:flutter_cblite_userprofile_sync/screens/UniversitySelect.dart';
 import 'package:flutter_cblite_userprofile_sync/screens/UserProfile.dart';
 
 import 'CbLiteManager.dart';
@@ -29,6 +30,7 @@ class MyApp extends StatelessWidget {
     routes: {
     Login.id: (context) => Login(),
     UserProfile.id: (context) => UserProfile(),
+    UniversitySelect.id: (context) => UniversitySelect()
     }
     );
   }

@@ -22,6 +22,7 @@ class CbLiteManager{
   static String syncGateway = "wss://qvp-ervlnbfvw9ch.apps.cloud.couchbase.com:4984";
 
   String? currentUser;
+
   late ListenerToken listenerToken;
 
   static CbLiteManager? instance;
@@ -69,10 +70,10 @@ class CbLiteManager{
     Directory appDocDirectory = await getApplicationDocumentsDirectory();
     String path = appDocDirectory.path+'/'+'universities.cblite2';
     File file = File(path);
-    DatabaseConfiguration config = DatabaseConfiguration();
+    DatabaseConfiguration config = DatabaseConfiguration(directory: path);
 
     if(!file.existsSync()) {
-      rootBundle.load("assets/universities.zip").then((ByteData value) {
+      await rootBundle.load("assets/universities.zip").then((ByteData value) {
         Uint8List wzzip = value.buffer.asUint8List(
             value.offsetInBytes, value.lengthInBytes);
         InputStream ifs = InputStream(wzzip);
@@ -89,10 +90,11 @@ class CbLiteManager{
           }
         }
       });
-    }
 
-    Database.copySync(from: path, name: universityDbName);
-    universityDatabase = Database.openSync(universityDbName, config);
+      universityDatabase = Database.openSync(universityDbName, config);
+      createUniversityDatabaseIndexes();
+
+    }
 
   }
 

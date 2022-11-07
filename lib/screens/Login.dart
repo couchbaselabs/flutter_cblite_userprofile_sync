@@ -124,6 +124,8 @@ class _LoginState extends State<Login> {
                                           await CbLiteManager.getSharedInstance()
                                               .openOrCreateDatabaseForUser(
                                                   username, password);
+                                          await CbLiteManager.getSharedInstance()
+                                              .openPrebuiltDatabase();
 
                                           Navigator.pushNamed(
                                               context, UserProfile.id);
