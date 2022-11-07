@@ -78,7 +78,9 @@ class _UserProfileState extends State<UserProfile> {
                     color: Colors.white,
                     onPressed: () {
                       CbLiteManager.getSharedInstance().closeDatabaseForUser();
+                      CurrentData.sharedData.currentImage.deleteSync();
                       CurrentData.sharedData = CurrentData();
+
                       Navigator.pushNamed(context, Login.id);
                     },
                     icon: Icon(
