@@ -32,19 +32,20 @@ class _UniversitySelectState extends State<UniversitySelect> {
           SizedBox(height: 20),
           buildUniversitySearch(),
           Expanded(
-            child: ListView.builder(
-              itemCount: data.length,
-              itemBuilder: (context, index) {
-                return ListTile(
-                  title: Text((data[index]['name'] ?? "") + " - " +
-                      (data[index]['country'] ?? "")),
-                  subtitle: Text(data[index]['web_pages'] ?? ""),
-                  onTap: () {
-                    CurrentData.sharedData.university = data[index]['name'];
-                    Navigator.pushNamed(context, UserProfile.id);
-                  },
-                );
-              })),
+              child: ListView.builder(
+                  itemCount: data.length,
+                  itemBuilder: (context, index) {
+                    return ListTile(
+                      title: Text((data[index]['name'] ?? "") +
+                          " - " +
+                          (data[index]['country'] ?? "")),
+                      subtitle: Text(data[index]['web_pages'] ?? ""),
+                      onTap: () {
+                        CurrentData.sharedData.university = data[index]['name'];
+                        Navigator.pushNamed(context, UserProfile.id);
+                      },
+                    );
+                  })),
         ],
       ),
     );
@@ -126,8 +127,9 @@ class _UniversitySelectState extends State<UniversitySelect> {
       String name, String? country) async {
     Database database = CbLiteManager.getSharedInstance().universityDatabase!;
 
-    ExpressionInterface whereQueryExpression = Function_.lower(Expression.property("name"))
-        .like(Expression.string("%" + name.toLowerCase() + "%"));
+    ExpressionInterface whereQueryExpression =
+        Function_.lower(Expression.property("name"))
+            .like(Expression.string("%" + name.toLowerCase() + "%"));
 
     if (country != null && country.isNotEmpty) {
       ExpressionInterface countryQueryExpression =
@@ -154,19 +156,15 @@ class _UniversitySelectState extends State<UniversitySelect> {
     List<Map<String, String>> data = [];
 
     await rows.asStream().forEach((row) {
-      // tag::university[]
       Map<String, String> properties = {};
       properties["name"] = row.dictionary("universities")!.string("name")!;
       properties["country"] =
           row.dictionary("universities")!.string("country")!;
       properties["web_pages"] =
           row.dictionary("universities")!.array("web_pages")!.join(" ");
-      // end::university[]
-
       data.add(properties);
     });
 
     return data;
   }
-
 }

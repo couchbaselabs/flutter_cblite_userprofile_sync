@@ -1,4 +1,3 @@
-
 import 'dart:async';
 import 'dart:core';
 import 'dart:io';
@@ -9,17 +8,18 @@ import 'package:cbl_flutter/cbl_flutter.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter/services.dart' show ByteData, Uint8List, rootBundle;
-class CbLiteManager{
+
+class CbLiteManager {
   Replicator? replicator;
   ListenerToken? replicatorListenerToken;
   Database? userprofileDatabase;
   Database? universityDatabase;
 
-
   static String userProfileDbName = "userprofile";
   static String universityDbName = "universities";
 
-  static String syncGateway = "wss://qvp-ervlnbfvw9ch.apps.cloud.couchbase.com:4984";
+  static String syncGateway =
+      "wss://qvp-ervlnbfvw9ch.apps.cloud.couchbase.com:4984";
 
   String? currentUser;
 
@@ -27,7 +27,7 @@ class CbLiteManager{
 
   static CbLiteManager? instance;
 
-  static CbLiteManager getSharedInstance(){
+  static CbLiteManager getSharedInstance() {
     return instance ??= CbLiteManager();
   }
 
@@ -40,42 +40,38 @@ class CbLiteManager{
     return "user::" + (currentUser ?? "");
   }
 
-  void deregisterForDatabaseChanges(){
+  void deregisterForDatabaseChanges() {
     userprofileDatabase!.removeChangeListener(listenerToken);
   }
 
-
-  Future<void> openOrCreateDatabaseForUser(String username, String password) async {
+  Future<void> openOrCreateDatabaseForUser(
+      String username, String password) async {
     Directory appDocDirectory = await getApplicationDocumentsDirectory();
-    String path = appDocDirectory.path+'/'+'username';
+    String path = appDocDirectory.path + '/' + 'username';
 
     DatabaseConfiguration config = DatabaseConfiguration();
     config.directory = path;
-    //config.setDirectory(String.format("%s/%s", context.getFilesDir(), username));
     currentUser = username;
     try {
-      // tag::createDatabase[]
       userprofileDatabase = await Database.openAsync('userprofile', config);
       registerForDatabaseChanges();
 
       startPushAndPullReplicationForCurrentUser(username, password);
-
-    } on CouchbaseLiteException catch (e){
-        print(e);
+    } on CouchbaseLiteException catch (e) {
+      print(e);
     }
   }
 
-  Future<void> openPrebuiltDatabase()
-  async {
+  Future<void> openPrebuiltDatabase() async {
     Directory appDocDirectory = await getApplicationDocumentsDirectory();
-    String path = appDocDirectory.path+'/'+'universities.cblite2';
+    String path = appDocDirectory.path + '/' + 'universities.cblite2';
     File file = File(path);
     DatabaseConfiguration config = DatabaseConfiguration(directory: path);
 
-    if(!file.existsSync()) {
+    if (!file.existsSync()) {
       await rootBundle.load("assets/universities.zip").then((ByteData value) {
-        Uint8List wzzip = value.buffer.asUint8List(
-            value.offsetInBytes, value.lengthInBytes);
+        Uint8List wzzip =
+            value.buffer.asUint8List(value.offsetInBytes, value.lengthInBytes);
         InputStream ifs = InputStream(wzzip);
         final archive = ZipDecoder().decodeBuffer(ifs);
         for (final file in archive) {
@@ -93,70 +89,65 @@ class CbLiteManager{
 
       universityDatabase = Database.openSync(universityDbName, config);
       createUniversityDatabaseIndexes();
-
     }
-
   }
 
   void createUniversityDatabaseIndexes() {
     try {
-      universityDatabase!.createIndex("nameLocationIndex", IndexBuilder.valueIndex([ValueIndexItem.expression(Expression.property("name")),
-          ValueIndexItem.expression(Expression.property("location"))]));
+      universityDatabase!.createIndex(
+          "nameLocationIndex",
+          IndexBuilder.valueIndex([
+            ValueIndexItem.expression(Expression.property("name")),
+            ValueIndexItem.expression(Expression.property("location"))
+          ]));
     } on CouchbaseLiteException catch (e) {
       print(e);
     }
   }
 
-
   void registerForDatabaseChanges() async {
     FutureOr<Document?> doc;
-    FutureOr<ListenerToken> listenerTokenOr = userprofileDatabase!.addChangeListener((final DatabaseChange change){
-          change.documentIds.forEach((document){
-            for(String docId in change.documentIds){
-            doc = userprofileDatabase!.document(docId);
-              if (doc != null) {
-              //Log.i("DatabaseChangeEvent", "Document was added/updated");
-              }
-              else {
-              //Log.i("DatabaseChangeEvent", "Document was deleted");
-              }
-            }
-            });
+    FutureOr<ListenerToken> listenerTokenOr =
+        userprofileDatabase!.addChangeListener((final DatabaseChange change) {
+      change.documentIds.forEach((document) {
+        for (String docId in change.documentIds) {
+          doc = userprofileDatabase!.document(docId);
+          if (doc != null) {
+            print("Document was added/updated");
+          } else {
+            print("Document was deleted");
+          }
         }
-    );
+      });
+    });
 
     listenerToken = await listenerTokenOr;
   }
 
-void closeDatabaseForUser()
-  {
+  void closeDatabaseForUser() {
     try {
       if (!userprofileDatabase!.isClosed) {
         deregisterForDatabaseChanges();
         userprofileDatabase!.close();
       }
-    } on CouchbaseLiteException catch (e){
+    } on CouchbaseLiteException catch (e) {
       print(e);
     }
+  }
 
-}
-
-  void closePrebuiltDatabase()
-  {
+  void closePrebuiltDatabase() {
     try {
       if (!universityDatabase!.isClosed) {
         universityDatabase!.close();
       }
-    } on CouchbaseLiteException catch (e){
+    } on CouchbaseLiteException catch (e) {
       print(e);
     }
-
   }
 
-
-  void startPushAndPullReplicationForCurrentUser(String username, String password) async
-  {
-    Database.log.custom!.level = LogLevel.verbose;
+  void startPushAndPullReplicationForCurrentUser(
+      String username, String password) async {
+    // Database.log.custom!.level = LogLevel.verbose;
     replicator = await Replicator.create(ReplicatorConfiguration(
       database: userprofileDatabase!,
       target: UrlEndpoint(Uri.parse("$syncGateway/$userProfileDbName")),
@@ -164,25 +155,17 @@ void closeDatabaseForUser()
       continuous: true,
       authenticator: BasicAuthenticator(username: username, password: password),
       channels: ["channel." + username],
-      headers:
-      {"User-Agent":"CouchbaseLite/3.0.0-192 (Java; Android 13; sdk_gphone64_x86_64) EE/release, Commit/4769f18387@7451a45c924d Core/3.0.0 (192)"},
-
-
+      headers: {
+        "User-Agent":
+            "CouchbaseLite/3.0.0-192 (Java; Android 13; sdk_gphone64_x86_64) EE/release, Commit/4769f18387@7451a45c924d Core/3.0.0 (192)"
+      },
     ));
 
-    // replicatorListenerToken = await replicator!.addChangeListener((change) {
-    //   print('Replicator activity: ${change.status.activity}');
-    // });
-
     await replicator!.start();
-
   }
 
-
-  void stopAllReplicationForCurrentUser()
-  {
+  void stopAllReplicationForCurrentUser() {
     replicator!.removeChangeListener(replicatorListenerToken!);
     replicator!.stop();
   }
 }
-

@@ -58,11 +58,6 @@ class _LoginState extends State<Login> {
                                     fillColor: Colors.grey.shade100,
                                     filled: true,
                                     hintText: "Username",
-                                    // focusedBorder: OutlineInputBorder(
-                                    //     borderRadius: BorderRadius.circular(10),
-                                    //     borderSide: BorderSide(color: Colors.black, width: 1.5)
-                                    //
-                                    // ),
                                     border: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(10),
                                         borderSide:
@@ -75,7 +70,6 @@ class _LoginState extends State<Login> {
                             SizedBox(
                               width: 500,
                               child: TextField(
-                                //cursorColor: Colors.black,
                                 onChanged: (value) {
                                   password = value;
                                 },
@@ -87,11 +81,6 @@ class _LoginState extends State<Login> {
                                     fillColor: Colors.grey.shade100,
                                     filled: true,
                                     hintText: "Password",
-                                    // focusedBorder: OutlineInputBorder(
-                                    //     borderRadius: BorderRadius.circular(10),
-                                    //     borderSide: BorderSide(color: Colors.black, width: 1.5)
-                                    //
-                                    // ),
                                     border: OutlineInputBorder(
                                         borderRadius: BorderRadius.circular(10),
                                         borderSide:
@@ -121,10 +110,12 @@ class _LoginState extends State<Login> {
                                       onPressed: () async {
                                         if (username.length > 0 &&
                                             password.length > 0) {
-                                          await CbLiteManager.getSharedInstance()
+                                          await CbLiteManager
+                                                  .getSharedInstance()
                                               .openOrCreateDatabaseForUser(
                                                   username, password);
-                                          await CbLiteManager.getSharedInstance()
+                                          await CbLiteManager
+                                                  .getSharedInstance()
                                               .openPrebuiltDatabase();
 
                                           Navigator.pushNamed(

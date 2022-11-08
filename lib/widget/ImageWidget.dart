@@ -1,12 +1,9 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 
 class ImageWidget extends StatelessWidget {
   final String imagePath;
   final VoidCallback onPressed;
 
-  // Constructor
   const ImageWidget({
     Key? key,
     required this.imagePath,
@@ -19,19 +16,18 @@ class ImageWidget extends StatelessWidget {
 
     return Center(
         child: Stack(children: [
-          buildImage(color),
-          Positioned(
-            child: buildEditIcon(color),
-            right: 4,
-            top: 10,
-          )
-        ]));
+      buildImage(color),
+      Positioned(
+        child: buildEditIcon(color),
+        right: 4,
+        top: 10,
+      )
+    ]));
   }
 
   // Builds Profile Image
   Widget buildImage(Color color) {
     final image = AssetImage(imagePath);
-
     return CircleAvatar(
       radius: 75,
       backgroundColor: color,
@@ -51,15 +47,14 @@ class ImageWidget extends StatelessWidget {
         size: 20,
       ));
 
-  // Builds/Makes Circle for Edit Icon on Profile Picture
   Widget buildCircle({
     required Widget child,
     required double all,
   }) =>
       ClipOval(
           child: Container(
-            padding: EdgeInsets.all(all),
-            color: Colors.white,
-            child: child,
-          ));
+        padding: EdgeInsets.all(all),
+        color: Colors.white,
+        child: child,
+      ));
 }
