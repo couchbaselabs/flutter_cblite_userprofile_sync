@@ -26,10 +26,6 @@ To run this prebuilt project, you will need:
 - Android Build Tools (> v.31.0.0)
 - JDK 8 (now embedded into Android Studio 4+)
 
-## App Architecture
-
-The sample app follows the [MVP pattern](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93presenter), separating the internal data model, from a passive view through a presenter that handles the logic of our application and acts as the conduit between the model and the view
-
 ## Try it out
 
 * Install Flutter plugin in Android Studio
