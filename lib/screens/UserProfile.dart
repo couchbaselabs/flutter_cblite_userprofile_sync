@@ -130,7 +130,7 @@ class _UserProfileState extends State<UserProfile> {
                     child: Text(
                       'Save',
                       style: TextStyle(
-                          fontSize: 27,
+                          fontSize: 22,
                           color: Colors.white,
                           fontWeight: FontWeight.w700),
                     )),
