@@ -147,10 +147,9 @@ class CbLiteManager {
 
   void startPushAndPullReplicationForCurrentUser(
       String username, String password) async {
-    Database.log.custom!.level = LogLevel.verbose;
     // Database.log.custom!.level = LogLevel.verbose;
     // ByteData bytes = await rootBundle
-    //     .load("assets/userprofile_cert_out.der"); //load certificate from assets
+    //     .load("assets/certificate.der"); //load certificate from assets
     // Uint8List certificate =
     //     bytes.buffer.asUint8List(bytes.offsetInBytes, bytes.lengthInBytes);
     replicator = await Replicator.create(ReplicatorConfiguration(
@@ -161,11 +160,13 @@ class CbLiteManager {
         authenticator:
             BasicAuthenticator(username: username, password: password),
         channels: ["channel." + username],
+        // there was an issue with missing User-Agent with AWS. This code is left as reference
         // headers: {
         //   "User-Agent":
         //       "CouchbaseLite/3.0.0-192 (Java; Android 13; sdk_gphone64_x86_64) EE/release, Commit/4769f18387@7451a45c924d Core/3.0.0 (192)"
         // },
-        // pinnedServerCertificate: certificate
+
+       // pinnedServerCertificate: certificate
 
     ));
 
