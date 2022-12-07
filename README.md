@@ -18,20 +18,14 @@ Full documentation can be found on the [Couchbase Developer Portal](https://deve
 
 
 ## Prerequisites
-To run this prebuilt project, you will need:
+To run this prebuilt project, you will need flutter installed on your machine, please refere to: https://docs.flutter.dev/get-started/install and install flutter SDks and all required dependencies (e.g. XCode on iOS).
 
-- [Android Studio Arctic Fox or above](https://developer.android.com/studio)
-- Android device or emulator running API level 22 or above
-- Android SDK installed and setup (> v.31.0.0)
-- Android Build Tools (> v.31.0.0)
-- JDK 8 (now embedded into Android Studio 4+)
 
 ## Try it out
 
-* Install Flutter plugin in Android Studio
-* Open flutter_cblite_userprofile_sync using Android Studio.
-* Build and run the project.
-* Verify that you see the login screen.
+The project supports both iOS and Android.
+Open the editor of your choice (I suggest Visual studio Code with Flutter plugin) and modify the string syncGateway in the class CbLiteManager.dart pointing to the correct App services enpoint (should be something like "wss://xxxx.apps.cloud.couchbase.com").
+To run the project on your preferred emulator or device symply type "flutter run" from the project root folder.
 
 ## Conclusion
 
