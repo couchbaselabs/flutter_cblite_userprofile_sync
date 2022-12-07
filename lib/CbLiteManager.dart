@@ -19,7 +19,7 @@ class CbLiteManager {
   static String universityDbName = "universities";
 
   static String syncGateway =
-      "wss://qvp-ervlnbfvw9ch.apps.cloud.couchbase.com:4984";
+      "wss://rcrhu-gsg1x6uqw.apps.cloud.couchbase.com";
 
   String? currentUser;
 
@@ -147,18 +147,26 @@ class CbLiteManager {
 
   void startPushAndPullReplicationForCurrentUser(
       String username, String password) async {
+    Database.log.custom!.level = LogLevel.verbose;
     // Database.log.custom!.level = LogLevel.verbose;
+    // ByteData bytes = await rootBundle
+    //     .load("assets/userprofile_cert_out.der"); //load certificate from assets
+    // Uint8List certificate =
+    //     bytes.buffer.asUint8List(bytes.offsetInBytes, bytes.lengthInBytes);
     replicator = await Replicator.create(ReplicatorConfiguration(
-      database: userprofileDatabase!,
-      target: UrlEndpoint(Uri.parse("$syncGateway/$userProfileDbName")),
-      replicatorType: ReplicatorType.pushAndPull,
-      continuous: true,
-      authenticator: BasicAuthenticator(username: username, password: password),
-      channels: ["channel." + username],
-      headers: {
-        "User-Agent":
-            "CouchbaseLite/3.0.0-192 (Java; Android 13; sdk_gphone64_x86_64) EE/release, Commit/4769f18387@7451a45c924d Core/3.0.0 (192)"
-      },
+        database: userprofileDatabase!,
+        target: UrlEndpoint(Uri.parse("$syncGateway/$userProfileDbName")),
+        replicatorType: ReplicatorType.pushAndPull,
+        continuous: true,
+        authenticator:
+            BasicAuthenticator(username: username, password: password),
+        channels: ["channel." + username],
+        // headers: {
+        //   "User-Agent":
+        //       "CouchbaseLite/3.0.0-192 (Java; Android 13; sdk_gphone64_x86_64) EE/release, Commit/4769f18387@7451a45c924d Core/3.0.0 (192)"
+        // },
+        // pinnedServerCertificate: certificate
+
     ));
 
     await replicator!.start();
