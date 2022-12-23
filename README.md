@@ -43,7 +43,7 @@ The easiest way to get started with Data Sync is to use a free
 After you have created a cluster, create a bucket and setup an App Service
 endpoint that uses that bucket.
 
-Also configure the App Service endpoint with the following sync function:
+Also configure the App Service endpoint with the following access control function:
 
 ```javascript
 function (doc, oldDoc, meta) {
@@ -67,9 +67,9 @@ To run the project on your preferred emulator or device simply type
 
 ## Conclusion
 
-This code is an example of how to use a Sync Gateway to synchronize data between
+This code is an example of how to App Services to synchronize data between
 Couchbase Lite enabled clients. The
 [Couchbase Developer Portal](https://developer.couchbase.com/tutorial-quickstart-android-java-sync/)
-tutorial will discuss how to configure your Sync Gateway to enforce relevant
+tutorial will discuss how to configure your App services to enforce relevant
 access control, authorization and data routing between Couchbase Lite enabled
 clients.
