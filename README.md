@@ -2,6 +2,8 @@
 
 #### Build a Flutter App with Couchbase Lite
 
+Find the video of this demo: https://drive.google.com/drive/folders/1yN8lzSmoEZ6OxUQ14AS5___9ijHAWf5q
+
 You can find more information about the Couchbase Lite for Dart/Flutter SDK
 [here](https://cbl-dart.dev/)
 
